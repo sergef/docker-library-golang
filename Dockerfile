@@ -2,24 +2,17 @@ FROM sergef/docker-library-alpine:edge
 
 ENV GOPATH /go
 
-ENV SRCROOT /go/src/github.com/tmp/goapp
+RUN apk add --no-cache \
+  g++ \
+  git \
+  go@community
 
-ONBUILD COPY . ${SRCROOT}
+ONBUILD ENV SRCROOT /go/src/github.com/tmp/goapp
 
-ONBUILD RUN apk add --no-cache \
-    g++ \
-    git \
-    go@community \
-  && cd ${SRCROOT} \
-  && go get \
+ONBUILD WORKDIR /go/src/github.com/tmp/goapp
+
+ONBUILD COPY . /go/src/github.com/tmp/goapp
+
+ONBUILD RUN go get \
   && go build -o /bin/goapp \
   && chmod +x /bin/goapp \
-  && apk del --no-cache \
-    g++ \
-    git \
-    go \
-  && rm -rf \
-    /go \
-    /var/cache/apk/*
-
-ONBUILD ENTRYPOINT ["tini", "--", "/bin/goapp"]
